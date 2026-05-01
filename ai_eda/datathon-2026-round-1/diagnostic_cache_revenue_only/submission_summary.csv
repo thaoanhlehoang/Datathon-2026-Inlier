@@ -1,0 +1,6 @@
+file,columns,rows,date_min,date_max,Revenue_min,Revenue_mean,Revenue_max,Revenue_nan_count,Revenue_negative_count
+submission_revenue_only_current.csv,"Date, Revenue, COGS",548,2023-01-01,2024-07-01,955010.8,3707103.0225,10065396.4,0,0
+submission_revenue_only_scaled_best.csv,"Date, Revenue, COGS",548,2023-01-01,2024-07-01,1002761.34,3892458.1737591242,10568666.22,0,0
+submission_revenue_only_horizon_scaled_best.csv,"Date, Revenue, COGS",548,2023-01-01,2024-07-01,1002761.34,3820230.4378649634,10450363.62,0,0
+submission_revenue_only_recent_level_best.csv,"Date, Revenue, COGS",548,2023-01-01,2024-07-01,857926.48,3330246.9808029192,9042170.06,0,0
+submission_revenue_only_ensemble_scaled_best.csv,"Date, Revenue, COGS",548,2023-01-01,2024-07-01,1002761.34,3892458.1737591242,10568666.22,0,0

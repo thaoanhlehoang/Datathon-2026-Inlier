@@ -1,0 +1,15 @@
+fold,experiment,Revenue_feature_count,COGS_feature_count,order_count_feature_count,AOV_feature_count,cogs_ratio_feature_count
+C,baseline_current,12,12,12,12,12
+C,hand_picked_importance,12,11,11,11,11
+C,top_10,10,10,10,10,10
+C,top_8,8,8,8,8,8
+C,top_6,6,6,6,6,6
+C,remove_low_importance,10,10,10,11,8
+C,remove_redundant_obvious,11,10,10,10,9
+D,baseline_current,12,12,12,12,12
+D,hand_picked_importance,12,11,11,11,11
+D,top_10,10,10,10,10,10
+D,top_8,8,8,8,8,8
+D,top_6,6,6,6,6,6
+D,remove_low_importance,11,8,8,11,8
+D,remove_redundant_obvious,11,10,10,10,9
