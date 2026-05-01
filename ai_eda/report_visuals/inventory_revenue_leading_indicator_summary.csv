@@ -1,0 +1,2 @@
+periods,period_start,period_end,correlation_days_supply_future_revenue,risk_threshold_days_supply,risk_period_count,avg_future_revenue_all_m,avg_future_revenue_risk_zone_m
+125,2012-07-01,2022-11-01,-0.5529907096080153,1000,45,130.40055849616,90.47962862288888
