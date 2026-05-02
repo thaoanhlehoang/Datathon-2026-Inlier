@@ -13,10 +13,13 @@ import our_method_forecast as om
 
 warnings.filterwarnings("ignore")
 
-DATA_DIR = Path(__file__).resolve().parent
-FULL_CACHE_DIR = DATA_DIR / "diagnostic_cache_full"
-CACHE_DIR = DATA_DIR / "diagnostic_cache_revenue_only"
-REPORT_PATH = DATA_DIR / "revenue_only_experiment_report.md"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
+OUTPUT_DIR = PROJECT_ROOT / "outputs" / "model"
+SUBMISSION_DIR = OUTPUT_DIR / "submissions"
+FULL_CACHE_DIR = PROJECT_ROOT / "artifacts" / "cache" / "diagnostic_cache_full"
+CACHE_DIR = PROJECT_ROOT / "artifacts" / "cache" / "diagnostic_cache_revenue_only"
+REPORT_PATH = OUTPUT_DIR / "revenue_only_experiment_report.md"
 
 TEST_START = pd.Timestamp("2023-01-01")
 TEST_END = pd.Timestamp("2024-07-01")
@@ -119,7 +122,7 @@ def load_fold_caches(folds):
         if len(df) != len(expected) or not pd.Index(df["Date"]).equals(pd.Index(expected)):
             raise ValueError(f"{path.name} does not match Fold {fold} expected dates.")
         frames.append(df)
-        status.append({"fold": fold, "cache": path.relative_to(DATA_DIR).as_posix(), "status": "loaded"})
+        status.append({"fold": fold, "cache": path.relative_to(PROJECT_ROOT).as_posix(), "status": "loaded"})
     return pd.concat(frames, ignore_index=True), pd.DataFrame(status)
 
 
@@ -336,7 +339,7 @@ def load_or_build_future_predictions(history, sample, refresh=False):
             "pred_AOV": direct["pred_AOV"],
         }
     )
-    CACHE_DIR.mkdir(exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     out.to_csv(path, index=False)
     return out, "recomputed"
 
@@ -369,7 +372,8 @@ def write_submission(sample, revenue, filename):
         raise ValueError(f"{filename} contains NaN in required output columns.")
     write = out.copy()
     write["Date"] = write["Date"].dt.strftime("%Y-%m-%d")
-    path = DATA_DIR / filename
+    SUBMISSION_DIR.mkdir(parents=True, exist_ok=True)
+    path = SUBMISSION_DIR / filename
     write.to_csv(path, index=False)
     return {
         "file": filename,
@@ -495,7 +499,7 @@ def main():
     start_label = pd.Timestamp.now().isoformat(timespec="seconds")
     args = parse_args()
     folds = selected_folds(args.folds)
-    CACHE_DIR.mkdir(exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     sample = pd.read_csv(DATA_DIR / "sample_submission.csv", parse_dates=["Date"])
     validate_sample(sample)
@@ -561,11 +565,11 @@ def main():
 
     if args.skip_submissions:
         submission_summary = pd.DataFrame([{"file": "skipped", "reason": "--skip-submissions"}])
-        future_cache_status = pd.DataFrame([{"fold": "future", "cache": future_predictions_cache_path().relative_to(DATA_DIR).as_posix(), "status": "skipped"}])
+        future_cache_status = pd.DataFrame([{"fold": "future", "cache": future_predictions_cache_path().relative_to(PROJECT_ROOT).as_posix(), "status": "skipped"}])
     else:
         full_df, future_status = load_or_build_future_predictions(history, sample, refresh=args.refresh_cache)
         submission_summary = generate_submissions(sample, history, full_df, best)
-        future_cache_status = pd.DataFrame([{"fold": "future", "cache": future_predictions_cache_path().relative_to(DATA_DIR).as_posix(), "status": future_status}])
+        future_cache_status = pd.DataFrame([{"fold": "future", "cache": future_predictions_cache_path().relative_to(PROJECT_ROOT).as_posix(), "status": future_status}])
 
     cache_status = pd.concat([fold_cache_status, future_cache_status], ignore_index=True)
 
@@ -590,6 +594,7 @@ def main():
     final_comparison.to_csv(CACHE_DIR / "recommended_strategy_metrics.csv", index=False)
     horizon_mae.to_csv(CACHE_DIR / "horizon_bucket_mae.csv", index=False)
     submission_summary.to_csv(CACHE_DIR / "submission_summary.csv", index=False)
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(build_report(context), encoding="utf-8")
     print(f"Saved report to {REPORT_PATH.name}", flush=True)
     print(fmt_table(recommended, max_rows=10), flush=True)

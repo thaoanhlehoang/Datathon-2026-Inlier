@@ -10,8 +10,9 @@ import our_method_forecast as om
 
 warnings.filterwarnings("ignore")
 
-DATA_DIR = Path(".")
-OUT_FILE = DATA_DIR / "submission_our_method_revenue_only.csv"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
+OUT_FILE = PROJECT_ROOT / "outputs" / "model" / "submissions" / "submission_our_method_revenue_only.csv"
 REVENUE_MODEL_NAMES = ["Revenue", "order_count", "AOV"]
 
 
@@ -85,6 +86,7 @@ def main() -> None:
         raise ValueError("Invalid Revenue values in generated submission.")
 
     submission["Date"] = submission["Date"].dt.strftime("%Y-%m-%d")
+    Path(args.out_file).parent.mkdir(parents=True, exist_ok=True)
     submission.to_csv(args.out_file, index=False)
     print(f"Saved {len(submission)} rows to {args.out_file}")
 

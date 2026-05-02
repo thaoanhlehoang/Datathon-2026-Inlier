@@ -15,9 +15,10 @@ except ModuleNotFoundError as exc:
 import our_method_forecast as om
 
 
-DATA_DIR = Path(__file__).resolve().parent
-OUT_CHART = DATA_DIR / "revenue_shap_feature_importance.png"
-OUT_TABLE = DATA_DIR / "revenue_shap_feature_importance.csv"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
+OUT_CHART = PROJECT_ROOT / "outputs" / "model" / "explainability" / "revenue_shap_feature_importance.png"
+OUT_TABLE = PROJECT_ROOT / "outputs" / "model" / "explainability" / "revenue_shap_feature_importance.csv"
 MODEL_NAMES = ["Revenue", "order_count", "AOV"]
 TARGET_MAP = {
     "Revenue": "Revenue",

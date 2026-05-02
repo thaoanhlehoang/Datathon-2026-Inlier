@@ -11,9 +11,12 @@ import our_method_forecast as om
 
 warnings.filterwarnings("ignore")
 
-DATA_DIR = Path(__file__).resolve().parent
-CACHE_DIR = DATA_DIR / "diagnostic_cache"
-REPORT_FILE = DATA_DIR / "fast_revenue_diagnostic_report.md"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
+OUTPUT_DIR = PROJECT_ROOT / "outputs" / "model"
+SUBMISSION_DIR = OUTPUT_DIR / "submissions"
+CACHE_DIR = PROJECT_ROOT / "artifacts" / "cache" / "diagnostic_cache_fast"
+REPORT_FILE = OUTPUT_DIR / "fast_revenue_diagnostic_report.md"
 
 FOLDS = [
     ("C", pd.Timestamp("2020-12-31"), pd.Timestamp("2021-01-01"), pd.Timestamp("2022-07-01")),
@@ -111,7 +114,7 @@ def build_fold_cache(history, fold, mode, refresh_cache):
     fold_name, train_end, val_start, val_end = fold
     path = cache_path(fold_name, mode)
     if path.exists() and not refresh_cache:
-        print(f"Loading cached Fold {fold_name}: {path.relative_to(DATA_DIR)}", flush=True)
+        print(f"Loading cached Fold {fold_name}: {path.relative_to(PROJECT_ROOT)}", flush=True)
         return pd.read_csv(path, parse_dates=["Date"])
 
     print(f"Training Fold {fold_name}: train <= {train_end.date()}, validate {val_start.date()} to {val_end.date()}", flush=True)
@@ -139,9 +142,9 @@ def build_fold_cache(history, fold, mode, refresh_cache):
             "model_mode": mode,
         }
     )
-    CACHE_DIR.mkdir(exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     out.to_csv(path, index=False)
-    print(f"Saved Fold {fold_name} cache: {path.relative_to(DATA_DIR)}", flush=True)
+    print(f"Saved Fold {fold_name} cache: {path.relative_to(PROJECT_ROOT)}", flush=True)
     return out
 
 
@@ -319,7 +322,8 @@ def write_submission(sample, revenue, cogs, filename):
         raise ValueError(f"{filename} date order does not match sample_submission.csv.")
     write = out.copy()
     write["Date"] = write["Date"].dt.strftime("%Y-%m-%d")
-    path = DATA_DIR / filename
+    SUBMISSION_DIR.mkdir(parents=True, exist_ok=True)
+    path = SUBMISSION_DIR / filename
     write.to_csv(path, index=False)
     return {
         "file": filename,
@@ -494,6 +498,7 @@ def main():
         submissions,
         selected,
     )
+    REPORT_FILE.parent.mkdir(parents=True, exist_ok=True)
     REPORT_FILE.write_text(report, encoding="utf-8")
     print("\n" + report, flush=True)
     print(f"\nSaved report to {REPORT_FILE.name}", flush=True)

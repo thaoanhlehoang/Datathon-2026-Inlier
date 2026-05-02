@@ -18,9 +18,12 @@ except ModuleNotFoundError:
 
 warnings.filterwarnings("ignore")
 
-DATA_DIR = Path(__file__).resolve().parent
-CACHE_DIR = DATA_DIR / "diagnostic_cache_revenue_cv"
-REPORT_PATH = DATA_DIR / "revenue_cv_experiment_report.md"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
+OUTPUT_DIR = PROJECT_ROOT / "outputs" / "model"
+SUBMISSION_DIR = OUTPUT_DIR / "submissions"
+CACHE_DIR = PROJECT_ROOT / "artifacts" / "cache" / "diagnostic_cache_revenue_cv"
+REPORT_PATH = OUTPUT_DIR / "revenue_cv_experiment_report.md"
 
 FOLD_SPECS = {
     "C": (pd.Timestamp("2020-12-31"), pd.Timestamp("2021-01-01"), pd.Timestamp("2022-07-01")),
@@ -343,7 +346,7 @@ def build_or_load_fold_predictions(
             "validation_end": val_end.date().isoformat(),
         }
     )
-    CACHE_DIR.mkdir(exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     out.to_csv(path, index=False)
     return out, "recomputed"
 
@@ -421,7 +424,8 @@ def write_submission(sample: pd.DataFrame, revenue: np.ndarray, filename: str) -
         raise ValueError(f"{filename} contains invalid Revenue values.")
     write = out.copy()
     write["Date"] = write["Date"].dt.strftime("%Y-%m-%d")
-    path = DATA_DIR / filename
+    SUBMISSION_DIR.mkdir(parents=True, exist_ok=True)
+    path = SUBMISSION_DIR / filename
     write.to_csv(path, index=False)
     return pd.DataFrame(
         [
@@ -514,7 +518,7 @@ def main() -> None:
     args = parse_args()
     folds = selected_folds(args.folds)
     param_grid = load_param_grid(args.param_grid_json)
-    CACHE_DIR.mkdir(exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     forecast_module = require_our_method_forecast()
     history = forecast_module.load_history()
@@ -593,6 +597,7 @@ def main() -> None:
     summary.to_csv(CACHE_DIR / "strategy_summary.csv", index=False)
     horizon_mae.to_csv(CACHE_DIR / "best_horizon_bucket_mae.csv", index=False)
     submission_summary.to_csv(CACHE_DIR / "submission_summary.csv", index=False)
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(build_report(context), encoding="utf-8")
     print(f"Saved report to {REPORT_PATH.name}", flush=True)
     print(fmt_table(pd.DataFrame([best])), flush=True)

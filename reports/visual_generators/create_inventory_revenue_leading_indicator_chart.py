@@ -5,9 +5,10 @@ import numpy as np
 import pandas as pd
 
 
-ROOT = Path(__file__).resolve().parent
-DATA_DIR = ROOT / "datathon-2026-round-1"
-OUTPUT_DIR = ROOT / "report_visuals"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
+VISUALS_DIR = PROJECT_ROOT / "reports" / "visuals"
+METRICS_DIR = PROJECT_ROOT / "reports" / "metrics"
 
 
 def build_monthly_dataset() -> pd.DataFrame:
@@ -76,7 +77,8 @@ def annotate_with_arrow(ax, text, xy, xytext, color="#2F5D46"):
 
 
 def create_chart() -> None:
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    VISUALS_DIR.mkdir(parents=True, exist_ok=True)
+    METRICS_DIR.mkdir(parents=True, exist_ok=True)
     df = build_monthly_dataset()
 
     x = df["days_of_supply"].to_numpy()
@@ -102,8 +104,8 @@ def create_chart() -> None:
             }
         ]
     )
-    df.to_csv(OUTPUT_DIR / "inventory_revenue_leading_indicator_monthly_metrics.csv", index=False)
-    metrics.to_csv(OUTPUT_DIR / "inventory_revenue_leading_indicator_summary.csv", index=False)
+    df.to_csv(METRICS_DIR / "inventory_revenue_leading_indicator_monthly_metrics.csv", index=False)
+    metrics.to_csv(METRICS_DIR / "inventory_revenue_leading_indicator_summary.csv", index=False)
 
     plt.rcParams.update(
         {
@@ -234,8 +236,8 @@ def create_chart() -> None:
     )
 
     plt.tight_layout(rect=[0.035, 0.05, 0.99, 0.95])
-    fig.savefig(OUTPUT_DIR / "inventory_revenue_leading_indicator_scatter.png", bbox_inches="tight", facecolor="white")
-    fig.savefig(OUTPUT_DIR / "inventory_revenue_leading_indicator_scatter.svg", bbox_inches="tight", facecolor="white")
+    fig.savefig(VISUALS_DIR / "inventory_revenue_leading_indicator_scatter.png", bbox_inches="tight", facecolor="white")
+    fig.savefig(VISUALS_DIR / "inventory_revenue_leading_indicator_scatter.svg", bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 

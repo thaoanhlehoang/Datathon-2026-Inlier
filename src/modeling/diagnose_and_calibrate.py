@@ -12,9 +12,12 @@ import our_method_forecast as om
 
 warnings.filterwarnings("ignore")
 
-DATA_DIR = Path(__file__).resolve().parent
-CACHE_DIR = DATA_DIR / "diagnostic_cache_full"
-REPORT_PATH = DATA_DIR / "calibration_diagnostic_report_full.md"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
+OUTPUT_DIR = PROJECT_ROOT / "outputs" / "model"
+SUBMISSION_DIR = OUTPUT_DIR / "submissions"
+CACHE_DIR = PROJECT_ROOT / "artifacts" / "cache" / "diagnostic_cache_full"
+REPORT_PATH = OUTPUT_DIR / "calibration_diagnostic_report_full.md"
 CUTOFF_DATE = pd.Timestamp("2022-12-31")
 TEST_START = pd.Timestamp("2023-01-01")
 TEST_END = pd.Timestamp("2024-07-01")
@@ -230,7 +233,7 @@ def build_fold_cache(history, fold_name, refresh):
     path = cache_path(fold_name)
     ok, reason = validate_cache(path, fold_name)
     if ok and not refresh:
-        print(f"Loaded Fold {fold_name} from cache: {path.relative_to(DATA_DIR)}", flush=True)
+        print(f"Loaded Fold {fold_name} from cache: {path.relative_to(PROJECT_ROOT)}", flush=True)
         return pd.read_csv(path, parse_dates=["Date"]), "loaded"
     if path.exists() and not refresh:
         print(f"Recomputing Fold {fold_name}; cache invalid: {reason}", flush=True)
@@ -265,12 +268,12 @@ def build_fold_cache(history, fold_name, refresh):
             "validation_end": val_end.date().isoformat(),
         }
     )
-    CACHE_DIR.mkdir(exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     out.to_csv(path, index=False)
     ok, reason = validate_cache(path, fold_name)
     if not ok:
         raise ValueError(f"New cache for Fold {fold_name} failed validation: {reason}")
-    print(f"Saved Fold {fold_name} cache: {path.relative_to(DATA_DIR)}", flush=True)
+    print(f"Saved Fold {fold_name} cache: {path.relative_to(PROJECT_ROOT)}", flush=True)
     return out, "recomputed"
 
 
@@ -682,7 +685,8 @@ def write_submission(sample, revenue, cogs, filename):
         raise ValueError(f"{filename} date order mismatch.")
     write = out.copy()
     write["Date"] = write["Date"].dt.strftime("%Y-%m-%d")
-    path = DATA_DIR / filename
+    SUBMISSION_DIR.mkdir(parents=True, exist_ok=True)
+    path = SUBMISSION_DIR / filename
     write.to_csv(path, index=False)
     ratio = np.divide(out["COGS"], out["Revenue"], out=np.full(len(out), np.nan), where=out["Revenue"] > 0)
     row = {
@@ -850,7 +854,7 @@ def main():
     start_label = pd.Timestamp.now().isoformat(timespec="seconds")
     args = parse_args()
     folds = selected_folds(args.folds)
-    CACHE_DIR.mkdir(exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     print("Inspecting data availability", flush=True)
     data_check = inspect_data_availability()
@@ -974,6 +978,7 @@ def main():
         "recommended": recommended,
     }
     report = build_report(context)
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(report, encoding="utf-8")
     print(f"Saved report to {REPORT_PATH.name}", flush=True)
     print(report, flush=True)

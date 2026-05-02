@@ -5,7 +5,8 @@ import numpy as np
 from matplotlib import font_manager
 
 
-OUT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+OUT_DIR = PROJECT_ROOT / "reports" / "visuals"
 
 
 def configure_font():
@@ -24,6 +25,7 @@ def configure_font():
 
 def main():
     configure_font()
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     labels = [
         "Current\nProfit Decline",

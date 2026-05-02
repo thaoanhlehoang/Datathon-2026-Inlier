@@ -9,8 +9,9 @@ from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error,
 
 warnings.filterwarnings("ignore")
 
-DATA_DIR = Path(".")
-OUT_FILE = DATA_DIR / "submission_our_method.csv"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
+OUT_FILE = PROJECT_ROOT / "outputs" / "model" / "submissions" / "submission_our_method.csv"
 RANDOM_STATE = 42
 RECOVERY_CARRY_FORWARD = 1.00
 GROWTH_CLIP_LOWER = 0.95
@@ -611,6 +612,7 @@ def main() -> None:
     )
     submission = final_system.forecast(sample["Date"])[["Date", "Revenue", "COGS"]]
     submission["Date"] = submission["Date"].dt.strftime("%Y-%m-%d")
+    OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     submission.to_csv(OUT_FILE, index=False)
 
     print(f"\nSaved {len(submission)} rows to {OUT_FILE}")
