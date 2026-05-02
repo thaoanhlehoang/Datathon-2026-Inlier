@@ -117,9 +117,9 @@ def plot_importance(importance: pd.DataFrame, top_n: int, chart_path: Path) -> N
         ax.set_title(model_name)
         ax.set_xlabel("mean |SHAP value|")
         ax.grid(axis="x", alpha=0.25)
-        ax.tick_params(axis="y", labelsize=9)
+        ax.tick_params(axis="y", labelsize=12)
 
-    fig.suptitle("Revenue Forecast Feature Importance (SHAP, LightGBM log-target models)", fontsize=14)
+    fig.suptitle("Revenue Forecast Feature Importance (SHAP, LightGBM log-target models)", fontsize=18)
     fig.tight_layout(rect=[0, 0, 1, 0.94])
     chart_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(chart_path, dpi=180, bbox_inches="tight")
